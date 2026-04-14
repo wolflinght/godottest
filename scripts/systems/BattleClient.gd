@@ -27,7 +27,10 @@ func _process(delta: float) -> void:
 	_countdown -= delta
 	if _countdown <= 0.0:
 		_has_action = false
-		battle_server.c2s_attack.rpc_id(1, local_peer_id)
+		if multiplayer.is_server():
+			battle_server.c2s_attack(local_peer_id)
+		else:
+			battle_server.c2s_attack.rpc_id(1, local_peer_id)
 
 # ============================================================
 # 接收服务器广播（服务器调用这些函数广播到所有客户端）
@@ -66,31 +69,46 @@ func send_attack() -> void:
 	if not _has_action:
 		return
 	_has_action = false
-	battle_server.c2s_attack.rpc_id(1, local_peer_id)
+	if multiplayer.is_server():
+		battle_server.c2s_attack(local_peer_id)
+	else:
+		battle_server.c2s_attack.rpc_id(1, local_peer_id)
 
 func send_ultimate(target_peer_id: int) -> void:
 	if not _has_action:
 		return
 	_has_action = false
-	battle_server.c2s_ultimate.rpc_id(1, local_peer_id, target_peer_id)
+	if multiplayer.is_server():
+		battle_server.c2s_ultimate(local_peer_id, target_peer_id)
+	else:
+		battle_server.c2s_ultimate.rpc_id(1, local_peer_id, target_peer_id)
 
 func send_absorb() -> void:
 	if not _has_action:
 		return
 	_has_action = false
-	battle_server.c2s_absorb.rpc_id(1, local_peer_id)
+	if multiplayer.is_server():
+		battle_server.c2s_absorb(local_peer_id)
+	else:
+		battle_server.c2s_absorb.rpc_id(1, local_peer_id)
 
 func send_switch_weapon(weapon_res_path: String) -> void:
 	if not _has_action:
 		return
 	_has_action = false
-	battle_server.c2s_switch_weapon.rpc_id(1, local_peer_id, weapon_res_path)
+	if multiplayer.is_server():
+		battle_server.c2s_switch_weapon(local_peer_id, weapon_res_path)
+	else:
+		battle_server.c2s_switch_weapon.rpc_id(1, local_peer_id, weapon_res_path)
 
 func send_switch_art(art_res_path: String) -> void:
 	if not _has_action:
 		return
 	_has_action = false
-	battle_server.c2s_switch_art.rpc_id(1, local_peer_id, art_res_path)
+	if multiplayer.is_server():
+		battle_server.c2s_switch_art(local_peer_id, art_res_path)
+	else:
+		battle_server.c2s_switch_art.rpc_id(1, local_peer_id, art_res_path)
 
 func get_countdown() -> float:
 	return _countdown if _has_action else 0.0

@@ -42,6 +42,9 @@ func start_battle(player_data: Array[CombatantData], enemy_data: Array[Combatant
 	_battle_active = true
 	# 广播战斗开始
 	_client.receive_battle_start.rpc()
+	# 广播所有角色初始状态
+	for c in combatants:
+		_client.receive_status.rpc(_pack_status(c))
 
 # ============================================================
 # 时间轴 Tick（_process 驱动）
@@ -86,9 +89,14 @@ func _process(delta: float) -> void:
 
 func _grant_action(c: CombatantData) -> void:
 	if c.is_player:
-		# 通知对应客户端
 		_timeout_timers[c.peer_id] = PLAYER_TIMEOUT
-		_client.receive_turn_start.rpc_id(c.peer_id, c.peer_id)
+		var local_id := multiplayer.get_unique_id()
+		if c.peer_id == local_id:
+			# 单机或本机玩家：直接本地调用
+			_client.receive_turn_start(c.peer_id)
+		else:
+			# 联机远端玩家
+			_client.receive_turn_start.rpc_id(c.peer_id, c.peer_id)
 	else:
 		# NPC 立即 AI 决策
 		_npc_decide(c)
@@ -187,7 +195,8 @@ func c2s_absorb(actor_peer_id: int) -> void:
 
 	var mp_cost := 50
 	if actor.current_mp < mp_cost:
-		_client.receive_turn_start.rpc_id(actor.peer_id, actor.peer_id)  # 内力不足，重新给行动权
+		_client.receive_log.rpc("内力不足，无法吸气！")
+		_grant_action(actor)  # 内力不足，重新给行动权
 		return
 
 	actor.current_mp -= mp_cost

@@ -9,7 +9,11 @@ enum AoEType {
 }
 
 @export var art_name: String = ""
+@export var skill_id: String = ""         # 唯一ID，对应 PlayerProfile.learned_arts 的 key
 @export var weapon_tag: WeaponData.WeaponTag = WeaponData.WeaponTag.UNARMED
+@export var prerequisite_id: String = ""  # 基本功前置（如"basic_sword"），等级不能超过它
+@export var agi_bonus_per_10: int = 0     # 每10级提供的身法加成（剑法用）
+@export var str_bonus_per_10: int = 0     # 每10级提供的臂力加成（刀法用）
 
 # ---- 普通攻击招式池 ----
 # 每个元素为 MoveData，系统按 weight 加权随机抽取

@@ -67,5 +67,5 @@ custom_minimum_size = Vector2(360, 80)
 [node name="BtnStart" type="Button" parent="VBox"]
 custom_minimum_size = Vector2(360, 52)
 text = "开始战斗！"
-theme_override_colors/font_color = Color.GOLD
+theme_override_colors/font_color = Color(1.0, 0.84, 0.0, 1)
 theme_override_font_sizes/font_size = 20

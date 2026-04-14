@@ -3,6 +3,8 @@
 ## 挂载到场景树，仅在 is_multiplayer_authority() 时运行核心逻辑
 extends Node
 
+@onready var _client: Node = $"../BattleClient"
+
 const TIMELINE_THRESHOLD := 1000.0
 const TICK_INTERVAL := 0.1          # 秒
 const PLAYER_TIMEOUT := 10.0        # 玩家决策超时秒数
@@ -39,7 +41,7 @@ func start_battle(player_data: Array[CombatantData], enemy_data: Array[Combatant
 
 	_battle_active = true
 	# 广播战斗开始
-	_rpc_broadcast_battle_start.rpc()
+	_client.receive_battle_start.rpc()
 
 # ============================================================
 # 时间轴 Tick（_process 驱动）
@@ -71,7 +73,7 @@ func _process(delta: float) -> void:
 			c.stun_freeze -= c.spd  # 消耗冻结量
 			if c.stun_freeze <= 0.0:
 				c.stun_freeze = 0.0
-				_rpc_broadcast_log.rpc(_fmt_stun_recover(c))
+				_client.receive_log.rpc(_fmt_stun_recover(c))
 			continue
 		c.timeline_progress += c.spd
 		if c.timeline_progress >= TIMELINE_THRESHOLD:
@@ -86,7 +88,7 @@ func _grant_action(c: CombatantData) -> void:
 	if c.is_player:
 		# 通知对应客户端
 		_timeout_timers[c.peer_id] = PLAYER_TIMEOUT
-		_rpc_turn_start.rpc_id(c.peer_id, c.peer_id)
+		_client.receive_turn_start.rpc_id(c.peer_id, c.peer_id)
 	else:
 		# NPC 立即 AI 决策
 		_npc_decide(c)
@@ -185,7 +187,7 @@ func c2s_absorb(actor_peer_id: int) -> void:
 
 	var mp_cost := 50
 	if actor.current_mp < mp_cost:
-		_rpc_turn_start.rpc_id(actor.peer_id, actor.peer_id)  # 内力不足，重新给行动权
+		_client.receive_turn_start.rpc_id(actor.peer_id, actor.peer_id)  # 内力不足，重新给行动权
 		return
 
 	actor.current_mp -= mp_cost
@@ -193,8 +195,8 @@ func c2s_absorb(actor_peer_id: int) -> void:
 	actor.current_hp = min(actor.current_hp + heal, actor.max_hp)
 
 	var log_text := "%s运功调息，恢复了 %d 点气血。" % [actor.display_name, heal]
-	_rpc_broadcast_log.rpc(log_text)
-	_rpc_broadcast_status.rpc(_pack_status(actor))
+	_client.receive_log.rpc(log_text)
+	_client.receive_status.rpc(_pack_status(actor))
 
 ## 玩家换兵刃
 @rpc("any_peer", "call_remote", "reliable")
@@ -226,13 +228,13 @@ func c2s_switch_weapon(actor_peer_id: int, weapon_res_path: String) -> void:
 			log_text = "%s收起兵器，摆出《%s》的起手式。" % [
 				actor.display_name, actor.current_martial_art.art_name
 			]
-		_rpc_broadcast_log.rpc(log_text)
+		_client.receive_log.rpc(log_text)
 	else:
 		actor.current_martial_art = null
 		var wname := weapon.weapon_name if weapon != null else "空手"
-		_rpc_broadcast_log.rpc("%s换上了【%s】，但未设置对应功法。" % [actor.display_name, wname])
+		_client.receive_log.rpc("%s换上了【%s】，但未设置对应功法。" % [actor.display_name, wname])
 
-	_rpc_broadcast_status.rpc(_pack_status(actor))
+	_client.receive_status.rpc(_pack_status(actor))
 
 ## 玩家换功法
 @rpc("any_peer", "call_remote", "reliable")
@@ -249,10 +251,10 @@ func c2s_switch_art(actor_peer_id: int, art_res_path: String) -> void:
 
 	var art: MartialArtData = load(art_res_path)
 	actor.current_martial_art = art
-	_rpc_broadcast_log.rpc("%s剑锋一转，气势陡变，将功法套路变更为《%s》。" % [
+	_client.receive_log.rpc("%s剑锋一转，气势陡变，将功法套路变更为《%s》。" % [
 		actor.display_name, art.art_name
 	])
-	_rpc_broadcast_status.rpc(_pack_status(actor))
+	_client.receive_status.rpc(_pack_status(actor))
 
 # ============================================================
 # 战斗判定核心
@@ -271,39 +273,39 @@ func _resolve_attack(actor: CombatantData, target: CombatantData) -> void:
 
 	# 播报出招
 	var broadcast := _fmt_attack(actor, target, move, flailing)
-	_rpc_broadcast_log.rpc(broadcast)
+	_client.receive_log.rpc(broadcast)
 
 	# 命中判定
 	if not BattleFormula.roll_hit(actor, target, flailing):
-		_rpc_broadcast_log.rpc("%s身形一闪，躲过了这招。" % target.display_name)
+		_client.receive_log.rpc("%s身形一闪，躲过了这招。" % target.display_name)
 		_check_battle_end()
 		return
 
 	# 招架判定
 	var parried := BattleFormula.roll_parry(target)
 	if parried:
-		_rpc_broadcast_log.rpc("%s举起武器格挡，化解了部分力道。" % target.display_name)
+		_client.receive_log.rpc("%s举起武器格挡，化解了部分力道。" % target.display_name)
 
 	# 伤害
 	var dmg := BattleFormula.calc_damage(actor, target, coeff, 0.0, flailing, parried)
 	target.current_hp = max(0, target.current_hp - dmg)
-	_rpc_broadcast_log.rpc("%s受到了 %d 点伤害！" % [target.display_name, dmg])
-	_rpc_broadcast_status.rpc(_pack_status(target))
+	_client.receive_log.rpc("%s受到了 %d 点伤害！" % [target.display_name, dmg])
+	_client.receive_status.rpc(_pack_status(target))
 
 	if target.current_hp <= 0:
 		target.is_alive = false
-		_rpc_broadcast_log.rpc("%s重伤倒地，退出了战斗！" % target.display_name)
+		_client.receive_log.rpc("%s重伤倒地，退出了战斗！" % target.display_name)
 
 	_check_battle_end()
 
 func _resolve_ultimate(actor: CombatantData, target: CombatantData, art: MartialArtData) -> void:
-	_rpc_broadcast_log.rpc(art.ultimate_broadcast.replace(
+	_client.receive_log.rpc(art.ultimate_broadcast.replace(
 		"{caster}", actor.display_name).replace("{target}", target.display_name))
 
 	# 绝招必中，不走命中判定
 	var parried := BattleFormula.roll_parry(target)
 	if parried:
-		_rpc_broadcast_log.rpc("%s举起武器格挡，化解了部分力道。" % target.display_name)
+		_client.receive_log.rpc("%s举起武器格挡，化解了部分力道。" % target.display_name)
 
 	var dmg := BattleFormula.calc_damage(
 		actor, target,
@@ -312,18 +314,18 @@ func _resolve_ultimate(actor: CombatantData, target: CombatantData, art: Martial
 		false, parried
 	)
 	target.current_hp = max(0, target.current_hp - dmg)
-	_rpc_broadcast_log.rpc("%s受到了 %d 点伤害！" % [target.display_name, dmg])
+	_client.receive_log.rpc("%s受到了 %d 点伤害！" % [target.display_name, dmg])
 
 	# 点穴
 	if art.ultimate_apply_stun:
 		target.stun_freeze = TIMELINE_THRESHOLD
-		_rpc_broadcast_log.rpc("%s被点中要穴，动弹不得！" % target.display_name)
+		_client.receive_log.rpc("%s被点中要穴，动弹不得！" % target.display_name)
 
-	_rpc_broadcast_status.rpc(_pack_status(target))
+	_client.receive_status.rpc(_pack_status(target))
 
 	if target.current_hp <= 0:
 		target.is_alive = false
-		_rpc_broadcast_log.rpc("%s重伤倒地，退出了战斗！" % target.display_name)
+		_client.receive_log.rpc("%s重伤倒地，退出了战斗！" % target.display_name)
 
 # ============================================================
 # 战斗结束检测
@@ -340,33 +342,8 @@ func _check_battle_end() -> void:
 
 func _end_battle(winner: String) -> void:
 	_battle_active = false
-	_rpc_broadcast_battle_end.rpc(winner)
+	_client.receive_battle_end.rpc(winner)
 	emit_signal("battle_ended", winner)
-
-# ============================================================
-# RPC 广播（服务器 → 所有客户端）
-# ============================================================
-
-@rpc("authority", "call_local", "reliable")
-func _rpc_broadcast_battle_start() -> void:
-	pass  # 客户端在 BattleClient 中监听
-
-@rpc("authority", "call_local", "reliable")
-func _rpc_broadcast_log(text: String) -> void:
-	pass  # 客户端在 BattleClient 中监听
-
-@rpc("authority", "call_local", "reliable")
-func _rpc_broadcast_status(packed: Dictionary) -> void:
-	pass  # 客户端在 BattleClient 中监听
-
-@rpc("authority", "call_local", "reliable")
-func _rpc_broadcast_battle_end(winner: String) -> void:
-	pass  # 客户端在 BattleClient 中监听
-
-## 通知特定客户端获得行动权
-@rpc("authority", "call_remote", "reliable")
-func _rpc_turn_start(peer_id: int) -> void:
-	pass  # 客户端在 BattleClient 中监听
 
 # ============================================================
 # 工具函数

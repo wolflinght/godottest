@@ -1,0 +1,71 @@
+[gd_scene load_steps=2 format=3 uid="uid://lobby_main"]
+
+[ext_resource type="Script" path="res://scenes/lobby/Lobby.gd" id="1"]
+
+[node name="Lobby" type="Control"]
+script = ExtResource("1")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.07, 0.05, 0.09, 1)
+
+[node name="Title" type="Label" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 60.0
+offset_right = 200.0
+offset_bottom = 110.0
+text = "坛说·江湖"
+theme_override_colors/font_color = Color(0.95, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 48
+horizontal_alignment = 1
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -160.0
+offset_right = 180.0
+offset_bottom = 220.0
+theme_override_constants/separation = 12
+
+[node name="IPInput" type="LineEdit" parent="VBox"]
+custom_minimum_size = Vector2(360, 44)
+placeholder_text = "输入对方IP（本机留空）"
+theme_override_font_sizes/font_size = 16
+
+[node name="BtnHost" type="Button" parent="VBox"]
+custom_minimum_size = Vector2(360, 52)
+text = "开  房  (Host)"
+theme_override_font_sizes/font_size = 20
+
+[node name="BtnJoin" type="Button" parent="VBox"]
+custom_minimum_size = Vector2(360, 52)
+text = "加  入  (Join)"
+theme_override_font_sizes/font_size = 20
+
+[node name="StatusLabel" type="Label" parent="VBox"]
+custom_minimum_size = Vector2(360, 40)
+text = "请选择开房或加入"
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 3
+
+[node name="PlayerList" type="VBoxContainer" parent="VBox"]
+custom_minimum_size = Vector2(360, 80)
+
+[node name="BtnStart" type="Button" parent="VBox"]
+custom_minimum_size = Vector2(360, 52)
+text = "开始战斗！"
+theme_override_colors/font_color = Color.GOLD
+theme_override_font_sizes/font_size = 20

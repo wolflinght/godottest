@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="MartialArtData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/MartialArtData.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/MoveData.gd" id="2"]
+
+[sub_resource type="Resource" id="move_1"]
+script = ExtResource("2")
+move_name = "蜻蜓点水"
+damage_coeff = 0.9
+weight = 50
+broadcast_template = "{caster}手腕一抖，使出一招「蜻蜓点水」，轻点{target}。"
+
+[sub_resource type="Resource" id="move_2"]
+script = ExtResource("2")
+move_name = "燕子掠波"
+damage_coeff = 1.3
+weight = 30
+broadcast_template = "{caster}身形一矮，剑光如「燕子掠波」般直刺{target}下盘。"
+
+[sub_resource type="Resource" id="move_3"]
+script = ExtResource("2")
+move_name = "三环套月"
+damage_coeff = 1.6
+weight = 20
+broadcast_template = "{caster}剑划圆弧，「三环套月」绵绵不绝地刺向{target}！"
+
+[resource]
+script = ExtResource("1")
+art_name = "太极剑"
+weapon_tag = 2
+move_pool = [SubResource("move_1"), SubResource("move_2"), SubResource("move_3")]
+ultimate_name = "缠字诀"
+ultimate_mp_cost = 500
+ultimate_damage_coeff = 0.5
+ultimate_ignore_def_ratio = 0.0
+ultimate_aoe = 0
+ultimate_apply_stun = true
+ultimate_broadcast = "{caster}使出太极绝学「缠字诀」，剑气如天罗地网将{target}死死定住！"

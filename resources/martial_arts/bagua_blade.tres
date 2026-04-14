@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="MartialArtData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/MartialArtData.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/MoveData.gd" id="2"]
+
+[sub_resource type="Resource" id="move_1"]
+script = ExtResource("2")
+move_name = "拔草寻蛇"
+damage_coeff = 1.1
+weight = 50
+broadcast_template = "{caster}刀锋一转，使出「拔草寻蛇」，扫向{target}的双腿。"
+
+[sub_resource type="Resource" id="move_2"]
+script = ExtResource("2")
+move_name = "迎风劈刺"
+damage_coeff = 1.4
+weight = 30
+broadcast_template = "{caster}大喝一声，借势跃起，「迎风劈刺」劈向{target}！"
+
+[sub_resource type="Resource" id="move_3"]
+script = ExtResource("2")
+move_name = "缠头裹脑"
+damage_coeff = 1.8
+weight = 20
+broadcast_template = "{caster}刀光霍霍，「缠头裹脑」直逼{target}！"
+
+[resource]
+script = ExtResource("1")
+art_name = "八卦刀"
+weapon_tag = 1
+move_pool = [SubResource("move_1"), SubResource("move_2"), SubResource("move_3")]
+ultimate_name = "战八方"
+ultimate_mp_cost = 400
+ultimate_damage_coeff = 1.2
+ultimate_ignore_def_ratio = 0.0
+ultimate_aoe = 1
+ultimate_apply_stun = false
+ultimate_broadcast = "{caster}大刀化作旋风！「战八方」横扫敌方阵线，势不可挡！"

@@ -28,9 +28,9 @@ func _ready() -> void:
 		_start_test_battle()
 
 func _start_test_battle() -> void:
-	var player := _make_test_player()
-	var enemy := _make_test_enemy()
-	battle_server.start_battle([player], [enemy])
+	var players: Array[CombatantData] = [_make_test_player()]
+	var enemies: Array[CombatantData] = [_make_test_enemy()]
+	battle_server.start_battle(players, enemies)
 
 func _make_test_player() -> CombatantData:
 	var c := CombatantData.new()

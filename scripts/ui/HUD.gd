@@ -3,7 +3,7 @@
 extends Control
 
 @onready var log_label: RichTextLabel = $LogPanel/LogLabel
-@onready var combatant_list: VBoxContainer = $StatusPanel/CombatantList
+@onready var combatant_list: VBoxContainer = $StatusPanel/VBox/CombatantList
 
 # peer_id/name → 状态行节点
 var _status_rows: Dictionary = {}

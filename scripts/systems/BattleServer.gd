@@ -96,13 +96,10 @@ func _grant_action(c: CombatantData) -> void:
 		_timeout_timers[c.peer_id] = PLAYER_TIMEOUT
 		var local_id := multiplayer.get_unique_id()
 		if c.peer_id == local_id:
-			# 单机或本机玩家：直接本地调用
 			_client.receive_turn_start(c.peer_id)
 		else:
-			# 联机远端玩家
 			_client.receive_turn_start.rpc_id(c.peer_id, c.peer_id)
 	else:
-		# NPC 立即 AI 决策
 		_npc_decide(c)
 
 ## 超时自动攻击

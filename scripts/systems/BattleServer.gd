@@ -63,6 +63,10 @@ func _process(delta: float) -> void:
 			_timeout_timers.erase(peer_id)
 			_auto_attack_for_peer(peer_id)
 
+	# 有玩家正在决策时，整个时间轴冻结，等待玩家指令
+	if not _timeout_timers.is_empty():
+		return
+
 	_tick_accum += delta
 	if _tick_accum < TICK_INTERVAL:
 		return
